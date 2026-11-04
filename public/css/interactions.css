@@ -1,0 +1,225 @@
+/* Handover header: keep the title, filters, and date controls legible at every width. */
+.page-heading:has(.handover-date-tools){display:flex;flex-direction:column;align-items:stretch;gap:18px}
+.page-heading:has(.handover-date-tools)>div:first-child{min-width:0}
+.handover-date-tools{display:grid;grid-template-columns:minmax(116px,auto) minmax(0,1fr) minmax(68px,auto) minmax(116px,auto);align-items:end;gap:9px;width:100%}
+.handover-date-tools .toolbar{display:grid;grid-template-columns:repeat(3,minmax(115px,1fr)) auto;align-items:end;gap:8px;min-width:0}
+.handover-date-tools .field{min-width:0;max-width:none}
+.handover-date-tools .field label{color:#39475c;font-size:12px;font-weight:700}
+.handover-date-tools .input,.handover-date-tools select{min-height:44px;color:#243247;background:#fff;font-size:13px}
+.handover-date-tools .button{min-height:44px;padding:10px 14px;font-size:12px;white-space:nowrap}
+.handover-date-tools .handover-step{justify-content:center;gap:7px;line-height:1.25}
+.handover-date-tools .handover-step span,.handover-date-tools .handover-step span:first-child,.handover-date-tools .handover-step span:nth-child(2){color:#fff!important}
+.handover-date-tools .handover-step small{color:rgba(255,255,255,.86)!important;font-size:10px;white-space:nowrap}
+.handover-date-tools .handover-today{font-size:12px}
+
+/* Collapsible desktop rail and a mobile drawer share one motion system. */
+.sidebar{overflow:hidden;transition:width .28s cubic-bezier(.2,.75,.25,1),padding .28s cubic-bezier(.2,.75,.25,1),transform .28s cubic-bezier(.2,.75,.25,1),left .28s cubic-bezier(.2,.75,.25,1);will-change:width}
+.shell .main{transition:min-width .28s ease}
+.nav-toggle{width:40px;height:40px;min-width:40px;padding:8px;border-radius:11px}
+.nav-toggle-icon{width:19px;height:19px;transition:transform .24s ease}
+.nav-toggle:hover .nav-toggle-icon{transform:scale(1.06)}
+.shell.nav-collapsed .sidebar{width:78px;padding-right:12px;padding-left:12px}
+.shell.nav-collapsed .brand{justify-content:center;padding-right:0;padding-left:0}
+.shell.nav-collapsed .brand>span:last-child,.shell.nav-collapsed .nav-caption,.shell.nav-collapsed .user-mini>div{display:none}
+.shell.nav-collapsed .nav-link{justify-content:center;gap:0;padding-right:8px;padding-left:8px;font-size:0}
+.shell.nav-collapsed .nav-icon{width:24px;font-size:17px}
+.shell.nav-collapsed .side-bottom .user-mini{justify-content:center;padding-right:0;padding-left:0}
+.shell.nav-collapsed .side-bottom form .nav-link{min-height:42px}
+.nav-toggle:focus-visible{outline:3px solid #ffd1ad!important;outline-offset:3px}
+.nav-drawer-scrim{display:none}
+
+/* Interactive, timed feedback. Hover and keyboard focus pause the timeout. */
+.toast-container{position:fixed;z-index:1000;top:82px;right:24px;display:grid;gap:11px;width:min(420px,calc(100vw - 32px));pointer-events:none}
+.toast{position:relative;isolation:isolate;display:grid;grid-template-columns:38px minmax(0,1fr) 34px;align-items:center;gap:12px;min-height:82px;padding:15px 14px 17px;border:1px solid #d9eadf;border-radius:16px;background:rgba(255,255,255,.98);box-shadow:0 18px 48px rgba(23,32,51,.17),0 3px 10px rgba(23,32,51,.06);color:#26354a;pointer-events:auto;overflow:hidden;animation:toast-enter .32s cubic-bezier(.2,.8,.2,1) both;transition:opacity .24s ease,transform .24s ease,filter .18s ease}
+.toast-error{border-color:#f0d4d1}
+.toast-icon{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#e7f7ed;color:#197548}
+.toast-icon svg{width:19px;height:19px}
+.toast-error .toast-icon{background:#fff0ee;color:#b53e35}
+.toast-copy{display:grid;gap:4px;min-width:0}
+.toast-copy strong{color:#203047;font-size:13px;font-weight:800;letter-spacing:-.01em}
+.toast-copy>span{color:#59687c;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.toast-close{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:10px;background:#f3f5f8;color:#657287;font-size:22px;line-height:1;cursor:pointer;transition:background .15s ease,color .15s ease,transform .15s ease}
+.toast-close:hover{background:#e8edf3;color:#243247;transform:rotate(90deg)}
+.toast-close:focus-visible{outline:3px solid #efaa77;outline-offset:2px}
+.toast-progress{position:absolute;right:0;bottom:0;left:0;height:3px;background:#31a267;transform-origin:left;animation:toast-progress linear forwards}
+.toast-error .toast-progress{background:#cb5148}
+.toast-paused .toast-progress{animation-play-state:paused!important}
+.toast-leave{opacity:0;transform:translate3d(18px,-8px,0) scale(.98);filter:blur(2px)}
+.admin-readonly-card{align-self:start;border-top:3px solid #d88943;background:linear-gradient(145deg,#fff 0%,#fffaf4 100%)}
+.admin-readonly-card .section-title{margin:9px 0;color:#26364a;font-size:15px;line-height:1.5}
+.admin-readonly-card .update-intro{max-width:420px;margin-bottom:3px}
+
+/* Handover is a time-based operational surface: date context, open follow-ups, and scannable history. */
+.handover-page-heading{gap:13px}
+.handover-heading-copy{min-width:0}
+.handover-heading-copy h1{margin:0}
+.handover-selected-date{margin-top:9px;color:#59687c;font-size:12px;line-height:1.5}
+.handover-selected-date strong{color:#28384d;font-weight:700}
+.handover-create-link{align-self:flex-start;font-size:12px;min-height:42px}
+.handover-date-tools{grid-template-columns:minmax(118px,auto) minmax(0,1fr) minmax(68px,auto) minmax(118px,auto);gap:9px;width:100%}
+.handover-date-tools .handover-filter-form{grid-template-columns:repeat(3,minmax(110px,1fr)) auto;gap:9px}
+.handover-date-tools .handover-filter-form .field{min-width:0}
+.handover-date-tools .handover-filter-form .button{min-height:44px;font-size:12px}
+.handover-date-tools .handover-step{font-size:11px}
+.handover-date-tools .handover-step small{font-size:10px}
+.handover-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.handover-done-count{color:#187448}
+.handover-pending-count{color:#a66304}
+.handover-update-count{color:#a64b0c}
+.handover-pending-section{margin-bottom:16px;border-left:4px solid #e5a437!important;background:linear-gradient(110deg,#fffdfa 0%,#fff 58%)}
+.handover-section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.handover-section-heading .section-title{margin:4px 0 0;font-size:16px}
+.handover-section-heading .panel-overline{font-size:10px;letter-spacing:.1em;color:#86683d}
+.handover-total-label{color:#59687c;font-size:12px;font-weight:600}
+.handover-pending-item{padding:15px 0;border-top:1px solid #f1e9de}
+.handover-pending-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.handover-pending-title-row .activity-title{font-size:14px;line-height:1.5}
+.handover-assignee{flex:none;color:#59687c;font-size:11px;font-weight:600}
+.handover-activity-description{margin:9px 0;color:#59687c;font-size:12px;line-height:1.65;white-space:pre-wrap}
+.handover-latest-remark{margin:10px 0;padding:12px 14px;border:1px solid #f0e5d7;border-radius:10px;background:#fff8ef;color:#39485c;font-size:13px;line-height:1.65;white-space:pre-wrap}
+.handover-latest-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin:0 0 11px;color:#59687c;font-size:11px}
+.handover-latest-meta strong{color:#29394e}
+.handover-latest-meta time{font-variant-numeric:tabular-nums}
+.handover-latest-meta .badge{font-size:10px}
+.handover-pending-item>.button{min-height:38px;font-size:11px}
+.handover-activity-section{padding-bottom:10px}
+.handover-activity{border-top:1px solid #e9edf2}
+.handover-activity>summary{display:flex;align-items:center;gap:13px;min-height:64px;padding:11px 4px;cursor:pointer;list-style:none}
+.handover-activity>summary::-webkit-details-marker{display:none}
+.handover-activity>summary:focus-visible{outline:3px solid #efad78;outline-offset:2px;border-radius:8px}
+.handover-chevron{display:grid;place-items:center;width:26px;height:26px;flex:none;border-radius:8px;background:#f5f6f8;color:#57667a;font-size:22px;line-height:1;transition:transform .18s ease,background .18s ease,color .18s ease}
+.handover-activity[open] .handover-chevron{transform:rotate(90deg);background:#fff0e2;color:#a84b08}
+.handover-activity-title{display:grid;gap:4px;min-width:0;flex:1}
+.handover-activity-title strong{color:#29394e;font-size:13px;line-height:1.45}
+.handover-activity-title small{color:#657287;font-size:11px}
+.handover-activity>summary>.badge{font-size:10px}
+.handover-update-total{flex:none;color:#69768a;font-size:11px;font-variant-numeric:tabular-nums}
+.handover-activity-body{padding:8px 10px 18px 43px}
+.handover-activity-body .timeline{padding-left:22px}
+.handover-activity-body .timeline-item{padding-bottom:19px}
+.handover-activity-body .timeline-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;color:#56657a;font-size:11px}
+.handover-activity-body .timeline-meta time{font-variant-numeric:tabular-nums}
+.handover-activity-body .timeline-name{color:#34445a;font-size:12px}
+.handover-update-status{margin:6px 0}
+.handover-update-status .badge{font-size:10px}
+.handover-activity-body .timeline-remark{margin:0;color:#3f4d61;font-size:13px;line-height:1.7}
+.handover-activity-body .history-result-support{margin-top:8px;padding:10px 12px;border-radius:8px;background:#f7f8fa;color:#556379;font-size:12px;line-height:1.6;white-space:pre-wrap}
+.handover-activity-body>.button{margin:5px 0 0;min-height:36px;font-size:11px}
+.handover-no-updates{display:grid;gap:4px;margin:8px 0 14px;padding:14px;border:1px dashed #dce2ea;border-radius:9px;color:#58677b;font-size:12px}
+.handover-no-updates strong{color:#34445a;font-size:12px}
+.handover-empty{display:grid;justify-items:center;gap:8px;color:#556379;font-size:12px;line-height:1.6}
+.handover-empty strong{font-size:14px}
+.handover-empty .button{margin-top:4px;min-height:40px;font-size:12px}
+
+/* Activity entry form readability: preserve the existing layout while enlarging every text tier. */
+.create-back-link{font-size:12px}
+.create-back-link>span{font-size:18px}
+.create-top-note{font-size:10px}
+.create-dot{width:7px;height:7px}
+.create-activity-card{padding:30px 36px 18px}
+.create-header-icon{width:44px;height:44px}
+.create-card-header h1{font-size:27px}
+.create-card-header p{font-size:13px;line-height:1.55}
+.create-kicker{font-size:10px}
+.create-record-tag{font-size:9px;padding:7px 11px}
+.create-form-progress{gap:13px;margin:25px 0 23px}
+.progress-item{gap:8px}
+.progress-item>span{width:24px;height:24px;font-size:10px}
+.progress-item b{font-size:11px}
+.create-form-progress>i{width:76px}
+.create-form-grid{gap:18px 22px}
+.create-field{gap:8px}
+.create-field>label,.create-label-line>label{font-size:13px}
+.create-field label em{font-size:9px}
+.create-input{height:46px;padding:0 14px;font-size:14px}
+.create-textarea{height:104px;min-height:104px;padding:12px 14px;line-height:1.65}
+.create-field>small{font-size:11px;line-height:1.5}
+.create-counter{font-size:11px}
+.create-input-icon>svg{left:13px;top:14px;width:17px;height:17px}
+.create-input-icon .create-input{padding-left:38px}
+.create-input-icon select{background-position:calc(100% - 16px) 20px,calc(100% - 12px) 20px}
+.create-status-note{gap:11px;padding:13px 15px;margin-top:19px}
+.status-note-icon{width:30px;height:30px}
+.status-note-icon svg{width:17px;height:17px}
+.create-status-note b{font-size:13px}
+.create-status-note i{font-size:11px;line-height:1.5}
+.create-status-note .badge{font-size:10px}
+.create-form-actions{gap:16px;margin-top:19px}
+.create-cancel{font-size:12px}
+.create-submit{min-height:46px;height:46px;min-width:170px;font-size:13px}
+.create-submit>span:last-child{font-size:17px}
+.create-card-footer{margin-top:17px;padding-top:12px;font-size:10px}
+.create-card-footer svg{width:14px;height:14px}
+.create-page-foot{font-size:9px}
+@keyframes toast-enter{from{opacity:0;transform:translate3d(20px,-8px,0) scale(.97)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes toast-progress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+@media(max-width:1000px){
+    .handover-date-tools{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+    .handover-date-tools .toolbar{grid-column:1/-1;grid-row:1;grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+    .handover-date-tools>.handover-step:first-child{grid-column:1;grid-row:2}
+    .handover-date-tools>.handover-today{grid-column:2;grid-row:2}
+    .handover-date-tools>.handover-step:last-child{grid-column:3;grid-row:2}
+    .handover-date-tools>.button{width:100%}
+    .handover-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .handover-create-link{grid-row:2}
+}
+@media(max-width:740px){
+    .handover-date-tools .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .handover-date-tools .toolbar>.button{display:inline-flex!important;width:100%;grid-column:1/-1}
+    .handover-date-tools .button{min-height:44px;padding:8px 7px;font-size:11px}
+    .handover-date-tools .handover-step{gap:4px;white-space:normal}
+    .handover-date-tools .handover-step small{display:none}
+    .toast-container{top:68px;right:12px;width:min(420px,calc(100vw - 24px))}
+    .toast{grid-template-columns:34px minmax(0,1fr) 34px;gap:9px;padding:13px 11px 15px}
+}
+@media(max-width:650px){
+    .nav-toggle{display:inline-flex}
+    .sidebar{left:-270px;width:252px!important;padding:24px 16px!important;z-index:1100;box-shadow:18px 0 50px rgba(20,29,45,.22)}
+    .sidebar.open{left:0}
+    .sidebar .brand{justify-content:flex-start;padding:5px 10px 30px}
+    .sidebar .brand>span:last-child,.sidebar .nav-caption,.sidebar .user-mini>div{display:initial}
+    .sidebar .nav-link{justify-content:flex-start;gap:11px;padding:11px 12px;font-size:12px}
+    .sidebar .nav-icon{width:16px;font-size:15px}
+    .sidebar .side-bottom .user-mini{justify-content:flex-start;padding:12px 8px}
+    .shell.nav-collapsed .sidebar{width:252px!important}
+    body.nav-drawer-open:after{content:"";position:fixed;z-index:1090;inset:0;background:rgba(18,27,43,.42);backdrop-filter:blur(2px);animation:scrim-in .2s ease both}
+    @keyframes scrim-in{from{opacity:0}to{opacity:1}}
+    .handover-date-tools{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .handover-date-tools .toolbar{gap:8px}
+    .handover-date-tools .field label{font-size:11px}
+    .handover-date-tools .input,.handover-date-tools select{font-size:12px}
+    .create-activity-card{padding:23px 20px 15px}
+    .create-card-header h1{font-size:24px}
+    .create-card-header p{font-size:12px}
+    .create-kicker{font-size:9px}
+    .create-form-progress{gap:7px;margin:21px 0}
+    .create-form-progress>i{width:24px}
+    .progress-item{gap:5px}
+    .progress-item b{font-size:9px}
+    .progress-item>span{width:21px;height:21px;font-size:9px}
+    .create-field>label,.create-label-line>label{font-size:12px}
+    .create-field label em{font-size:8px}
+    .create-input{height:44px;font-size:13px}
+    .create-textarea{min-height:100px}
+    .create-field>small{font-size:10px}
+    .create-status-note b{font-size:12px}
+    .create-status-note i{font-size:10px}
+    .create-cancel{font-size:11px}
+    .create-submit{min-height:44px;height:44px;font-size:12px}
+    .create-card-footer{font-size:9px}
+    .handover-date-tools .handover-filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .handover-date-tools .handover-filter-form>.button{grid-column:1/-1}
+    .handover-stats{gap:9px}
+    .handover-activity>summary{gap:8px;min-height:58px}
+    .handover-activity-title strong{font-size:12px}
+    .handover-activity-title small,.handover-update-total{font-size:10px}
+    .handover-activity-body{padding:8px 3px 16px 30px}
+    .handover-pending-title-row{flex-direction:column;gap:5px}
+    .handover-latest-meta{align-items:flex-start;flex-direction:column;gap:7px}
+}
+@media(prefers-reduced-motion:reduce){
+    .sidebar,.shell .main,.nav-toggle-icon,.toast,.toast-close{transition:none!important;animation:none!important}
+    .toast-progress{display:none}
+    body.nav-drawer-open:after{animation:none}
+}
