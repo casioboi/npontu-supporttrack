@@ -29,22 +29,24 @@ Operational support work can be difficult to track when tasks, findings, and fol
 ## 5. Key features
 
 - Session-based login for administrator and staff roles; public registration is not provided.
-- Administrator-created activities with a date, description, and optional single staff assignee.
+- Administrator-created and editable activities with a date, description, and multiple active staff assignees.
+- Low, Medium, and High activity priorities with a Medium default, filters, and priority-aware handover ordering.
 - Structured updates with Work Done, optional Findings, and status-dependent Outstanding Issues and Recommended Next Steps.
 - Server-captured personnel attribution and timestamps; updates are appended to activity history.
 - Daily handover views with historical status, latest update, pending carryover, and Awaiting Update state.
 - Activity history, role-aware dashboards, filtered reports, and CSV export.
-- Administrator-managed personnel accounts, activation state, role, and password reset.
-- Staff profile page for changing the signed-in user's password.
+- Private unplanned support-issue reports visible to the reporter and administrators, with administrator-managed status and resolution notes.
+- Administrator-managed personnel accounts, invitation emails, self-service password reset, and account activation.
+- Forced password changes for administrator-issued temporary passwords.
 
-**Not implemented:** activity priorities, activity editing or deletion, multi-person assignment, unplanned support-issue reporting, email-based password reset, and forced first-login password changes. Pending activities can be continued by another staff member through handover without reassignment.
+**Not implemented:** activity deletion, a separate administrator-change audit log, and multi-factor authentication. Pending activities can also be continued by authorised staff through handover.
 
 ## 6. User roles and permissions
 
 | Role | Main capabilities |
 | --- | --- |
-| Administrator | View team dashboards, create activities, create and manage personnel accounts, review team activity and history, use reports, and export CSV. Administrators cannot submit activity updates through the staff update workflow. |
-| Staff | View assigned or created activities, access pending/awaiting handover work, submit updates where authorised, view their own update history and scoped reports, and change their password. |
+| Administrator | View team dashboards, create activities, invite and manage personnel, review team activity and issue reports, manage reported issue status, use reports, and export CSV. Administrators cannot submit activity updates through the staff update workflow. |
+| Staff | View assigned or created activities, access pending/awaiting handover work, submit updates where authorised, report and view their own support issues, view their own update history and scoped reports, and manage their password. |
 
 Authorization is enforced by middleware and activity policies on the server. See [docs/SECURITY.md](docs/SECURITY.md) for the implemented controls and limitations.
 
@@ -93,13 +95,13 @@ flowchart TD
 
 ## 10. Database overview
 
-The principal domain tables are `users`, `activities`, and `activity_updates`. Activities identify their creator and optional assignee. Each activity can have many updates; each update stores a status, structured details, and a snapshot of the submitting personnel. Handover is calculated from activities and updates rather than stored in a separate handover table.
+The principal domain tables are `users`, `activities`, `activity_assignees`, `activity_updates`, and `support_issue_reports`. Activities can be assigned to multiple staff members; each activity can have many updates, and each update stores a status, structured details, and a snapshot of the submitting personnel. Support-issue reports are private to the reporter and administrators. Handover is calculated from activities and updates rather than stored in a separate handover table.
 
-The migrations also create Laravel support tables for sessions, cache, password-reset tokens, and queued jobs. The schema and delete rules are documented in [docs/DATABASE-DESIGN.md](docs/DATABASE-DESIGN.md).
+The migrations also create Laravel support tables for sessions, cache, password-reset tokens, and queued jobs. Password-reset tokens support invitation acceptance and self-service password reset. The schema and delete rules are documented in [docs/DATABASE-DESIGN.md](docs/DATABASE-DESIGN.md).
 
 ## 11. Installation and setup
 
-See the full [Windows/XAMPP and production setup guide](docs/DEPLOYMENT.md). In brief:
+See the [Windows/XAMPP setup guide](docs/DEPLOYMENT.md) for local development. For the planned Ubuntu VPS, Docker, Nginx, HTTPS, and Aiven MySQL production architecture, follow the authoritative [VPS and Aiven deployment guide](docs/PRODUCTION-HOSTING-AIVEN-VPS.md). No production deployment is claimed.
 
 ```powershell
 git clone https://github.com/casioboi/npontu-supporttrack.git
@@ -143,14 +145,14 @@ Open [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login). The repository 
 
 ## 15. System usage
 
-- Administrators create personnel accounts and official activities.
+- Administrators invite personnel and create official activities.
 - Staff open assigned work or pending work presented through Daily Handover.
 - For **every** update, Work Done is required and Findings is optional.
 - For **Pending** updates, Outstanding Issues and Recommended Next Steps are also required.
 - For **Done** updates, Outstanding Issues and Recommended Next Steps may be empty.
-- Reports filter activities by activity date and calculate status as of the selected end date; results can be exported as CSV.
+- Reports filter activities by activity date and priority and calculate status as of the selected end date; results can be exported as CSV.
 
-For step-by-step instructions, see the [System User Guide](docs/SYSTEM-USER-GUIDE.md). Unplanned support issues cannot currently be submitted as a separate report in the application.
+For step-by-step instructions, see the [System User Guide](docs/SYSTEM-USER-GUIDE.md). Configure a production mail transport and the correct `APP_URL` to deliver invitations and password-reset links; the example environment logs mail locally.
 
 ## 16. Security and access control
 
@@ -164,7 +166,7 @@ Run the full suite with:
 php artisan test
 ```
 
-The suite covers authentication, role boundaries, activity creation and updates, conditional validation, identity/timestamp handling, stale submissions, handover history and carryover, report filters and CSV scoping, and profile/personnel workflows. Tests use in-memory SQLite. The suite was run while preparing these documents: **34 tests passed, with 268 assertions**. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#testing).
+The suite covers authentication, role boundaries, multi-person assignment, private support-issue reporting, invitation and password reset flows, forced password changes, activity creation/editing/priority, conditional update validation, identity/timestamp handling, stale submissions, handover history, report filters, and CSV scoping. Tests use in-memory SQLite. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#testing) for current validation coverage.
 
 ## 18. Screenshots
 
@@ -174,10 +176,8 @@ No application screenshots are included yet. Add screenshots captured from a run
 
 Potential future work, not current functionality:
 
-- Priority and multi-person assignment support.
-- Activity editing, rescheduling, and lifecycle management.
-- A dedicated unplanned support-issue reporting workflow.
-- Email invitation and password reset flows, plus optional first-login password change.
+- Activity deletion/lifecycle management and an audit log for administrator changes to activity details.
+- Multi-factor authentication and stronger account recovery protections.
 - Broader integration, notification, and deployment automation.
 
 ## 20. Author and project information

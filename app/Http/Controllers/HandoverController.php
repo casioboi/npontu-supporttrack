@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class HandoverController extends Controller
 {
@@ -15,6 +16,7 @@ class HandoverController extends Controller
         $filters = $request->validate([
             'date' => ['nullable', 'date'],
             'status' => ['nullable', 'in:Done,Pending,Awaiting Update'],
+            'priority' => ['nullable', Rule::in(Activity::PRIORITIES)],
             'personnel' => ['nullable', 'integer', 'exists:users,id'],
         ]);
         $date = $filters['date'] ?? now()->toDateString();
@@ -26,6 +28,7 @@ class HandoverController extends Controller
         $activities = Activity::query()
             ->with([
                 'assignee',
+                'assignees',
                 'creator',
                 'updates' => fn ($updates) => $updates
                     ->where('created_at', '<=', $dayEnd)
@@ -52,6 +55,7 @@ class HandoverController extends Controller
 
                 if (! $user->isAdmin()
                     && $activity->assigned_to !== $user->id
+                    && ! $activity->assignees->contains('id', $user->id)
                     && $activity->created_by !== $user->id
                     && ! in_array($statusAtEndOfDay, ['Pending', 'Awaiting Update'], true)
                     && ! $updatedOnDay) {
@@ -60,11 +64,16 @@ class HandoverController extends Controller
 
                 if ($staffFilter && $activity->created_by !== (int) $staffFilter
                     && $activity->assigned_to !== (int) $staffFilter
+                    && ! $activity->assignees->contains('id', (int) $staffFilter)
                     && ! $activityUpdates->contains(fn ($update) => $update->user_id === (int) $staffFilter)) {
                     return null;
                 }
 
                 if (! empty($filters['status']) && $statusAtEndOfDay !== $filters['status']) {
+                    return null;
+                }
+
+                if (! empty($filters['priority']) && $activity->priority !== $filters['priority']) {
                     return null;
                 }
 
@@ -77,11 +86,16 @@ class HandoverController extends Controller
                 return $activity;
             })
             ->filter()
-            ->sortBy(fn (Activity $activity) => match ($activity->handover_status) {
-                'Pending' => '0-'.$activity->title,
-                'Awaiting Update' => '1-'.$activity->title,
-                default => '2-'.$activity->title,
-            })
+            ->sortBy(fn (Activity $activity) => sprintf(
+                '%d-%d-%s',
+                match ($activity->handover_status) {
+                    'Pending' => 0,
+                    'Awaiting Update' => 1,
+                    default => 2,
+                },
+                array_search($activity->priority, Activity::PRIORITIES, true),
+                $activity->title,
+            ))
             ->values();
 
         return view('handover', [

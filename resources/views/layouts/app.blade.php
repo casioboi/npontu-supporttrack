@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/activity-priority.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/feature-workflows.css') }}">
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/readability.css') }}">
     <link rel="stylesheet" href="{{ asset('css/buttons.css') }}">
@@ -28,6 +30,7 @@
         @endif
         <a class="nav-link {{ request()->routeIs('activity-history') ? 'active' : '' }}" href="{{ route('activity-history') }}"><span class="nav-icon" aria-hidden="true">◷</span>{{ auth()->user()->isAdmin() ? 'Activity History' : 'My Activity History' }}</a>
         <a class="nav-link {{ request()->routeIs('handover') ? 'active' : '' }}" href="{{ route('handover') }}"><span class="nav-icon" aria-hidden="true">⇄</span>Daily Handover</a>
+        <a class="nav-link {{ request()->routeIs('support-issues.*') ? 'active' : '' }}" href="{{ route('support-issues.index') }}"><span class="nav-icon" aria-hidden="true">!</span>Support Issues</a>
         <a class="nav-link {{ request()->routeIs('reports') ? 'active' : '' }}" href="{{ route('reports') }}"><span class="nav-icon" aria-hidden="true">▥</span>Reports</a>
         @if(auth()->user()->isAdmin())
             <div class="nav-caption">Administration</div>

@@ -156,7 +156,7 @@
 
 @media(max-width:1000px){
     .handover-date-tools{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
-    .handover-date-tools .toolbar{grid-column:1/-1;grid-row:1;grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+    .handover-date-tools .toolbar{grid-column:1/-1;grid-row:1;grid-template-columns:repeat(4,minmax(0,1fr)) auto}
     .handover-date-tools>.handover-step:first-child{grid-column:1;grid-row:2}
     .handover-date-tools>.handover-today{grid-column:2;grid-row:2}
     .handover-date-tools>.handover-step:last-child{grid-column:3;grid-row:2}

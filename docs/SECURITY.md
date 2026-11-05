@@ -10,14 +10,18 @@ This document records security behavior visible in the current application code 
 - Login accepts only active accounts and is rate-limited to six attempts per minute by the login route middleware.
 - The session identifier is regenerated after successful authentication. Logout invalidates the session and regenerates the CSRF token.
 - The active-account middleware logs out an authenticated user whose account has been deactivated.
-- Public registration is not provided. Administrators create accounts and can reset passwords.
-- Passwords are hashed through Laravel's `hashed` model cast and `Hash::make`; account creation, reset, and self-service password change require at least 12 characters.
+- Public registration is not provided. Administrators invite accounts by email or set a temporary password that must be changed at next login.
+- Self-service password reset uses Laravel's password broker. The request response does not reveal whether an account exists; broker throttling and token expiry are controlled by Laravel configuration.
+- Passwords are hashed through Laravel's `hashed` model cast and `Hash::make`; invitation/reset and self-service password changes require at least 12 characters.
+- First-login middleware restricts temporary-password accounts to profile/password change and logout until the password is changed. Invitation/reset links are single-use password-broker tokens.
 - Staff may change their own password only after supplying the current password. Email, role, and activation state are administrator-managed.
 
 ### Authorization
 
 - The `admin` middleware protects personnel management routes; the application checks administrator role server-side.
 - `ActivityPolicy` and controller checks govern activity visibility and update operations. Administrators may create and review activities but cannot submit staff updates through the update route.
+- Activity assignment supports multiple staff members; the pivot relationship and server-side validation determine assignment scope. The legacy scalar assignment column remains for compatibility.
+- Support-issue reports are visible only to their reporter and administrators. Only administrators can change report status; resolution requires notes.
 - Staff history and reports are query-scoped; the report export uses the same result and access-scope logic as the report view.
 - UI controls are not treated as an authorization boundary.
 
@@ -31,10 +35,11 @@ This document records security behavior visible in the current application code 
 - Models define fillable attributes. Controller-side validation and explicit construction of identity fields are important because fillable status alone is not a complete authorization control.
 - Blade templates use escaped `{{ }}` output for user-facing values. Continue to avoid unescaped output for untrusted content.
 - `.env` is listed in `.gitignore`; deployment secrets should remain outside the repository.
+- Invitation and reset emails depend on the deployment's configured mail transport. Use a generic account-recovery response and monitor mail delivery through the configured provider/logging.
 
 ### Historical integrity and deactivation
 
-Ordinary application routes expose no edit/delete operation for submitted activity updates. New submissions preserve prior update records and identity snapshots. User deactivation prevents future access but leaves existing activity and history data in place.
+Ordinary application routes expose no edit/delete operation for submitted activity updates. New submissions preserve prior update records and identity snapshots. Administrator edits to activity metadata do not create a separate metadata-change history record. User deactivation prevents future access but leaves existing activity and history data in place.
 
 These are application-level controls, not tamper-proof audit storage. Users with direct database or server access can alter data outside the application. Retention, backups, privileged access, and audit monitoring remain operational responsibilities.
 
@@ -51,7 +56,8 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) and [operations.md](operations.md) for deploy
 ## Known limitations
 
 - Multi-factor authentication is not implemented.
-- There is no self-service email password-reset flow, invitation flow, or forced first-login password change. A reset token table exists in the schema, but no reset route/UI is exposed.
+- No request-throttle middleware is configured specifically for issue submissions or the invitation route. Laravel's password broker throttles reset/invitation token requests and expires tokens according to `config/auth.php`; apply additional host/provider controls if abuse is a concern.
+- Invitation/reset links rely on secure production HTTPS, accurate `APP_URL`, and a configured mail transport. Delivery and expiry behavior must be verified in the target environment.
 - The default session configuration uses a database-backed session with a 120-minute idle lifetime and `SESSION_ENCRYPT=false`; the production host must review cookie security and session configuration.
 - Login has route-level throttling, but no broader application-wide rate-limiting policy is documented here.
 - No independent penetration test or formal security review is claimed.

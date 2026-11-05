@@ -29,6 +29,7 @@ The current Blade layout serves CSS from `public/css`, so this build is not requ
 - Confirm the release commit and review its changes.
 - Confirm automated tests pass in CI or the release environment.
 - Confirm the target database, application URL, timezone, and session settings.
+- Confirm production mail delivery is configured and the deployed `APP_URL` matches the public HTTPS address.
 - Verify the `.env` and all credentials are supplied by the deployment platform and are not part of the release.
 - Take and verify a restorable database backup before schema changes.
 - Confirm that `storage/` and `bootstrap/cache/` are writable by the application process.
@@ -41,6 +42,7 @@ The current Blade layout serves CSS from `public/css`, so this build is not requ
 4. Create or verify the initial administrator using the hidden prompt command `php artisan supporttrack:admin`. Do not reuse a bootstrap password from another environment.
 5. Clear stale cached configuration when environment values have changed, then run `php artisan optimize`.
 6. Confirm HTTPS and production debug settings (`APP_ENV=production`, `APP_DEBUG=false`).
+7. Verify mail delivery through the approved provider without exposing credentials or real user data.
 
 Do not use destructive schema commands (`migrate:fresh`, `migrate:refresh`, or `migrate:reset`) on production data. Prefer a forward migration to correct a schema issue. A rollback of a migration that drops columns can permanently remove update details; assess the migration and take a backup before considering rollback.
 
@@ -50,14 +52,19 @@ Use designated test accounts and non-sensitive test activity data:
 
 1. Sign in as an administrator and confirm the dashboard and personnel page load.
 2. Create or verify a staff account and sign in as staff.
-3. Submit a Pending update with Work Done, Outstanding Issues, and Recommended Next Steps; verify Findings can be left blank.
-4. Confirm the activity appears in the current handover and on the following day's handover as carried forward.
-5. Sign in as another authorised staff member and confirm the pending activity can be reviewed and continued without reassignment.
-6. Submit a Done update and verify that the activity no longer appears as pending on later handover dates.
-7. Review the earlier handover date and confirm it still shows the historical Pending status.
-8. Submit a Done update with only Work Done; verify Findings and the two pending-only fields may be empty.
-9. Verify an attempted Pending update without either required pending-only field is rejected.
-10. Check a report using an explicit end date and verify its status reflects that date.
+3. Edit an activity's details as administrator and verify staff cannot access the edit route; confirm this does not change status or update history.
+4. Submit a Pending update with Work Done, Outstanding Issues, and Recommended Next Steps; verify Findings can be left blank.
+5. Confirm the activity appears in the current handover and on the following day's handover as carried forward.
+6. Sign in as another authorised staff member and confirm the pending activity can be reviewed and continued without reassignment.
+7. Submit a Done update and verify that the activity no longer appears as pending on later handover dates.
+8. Review the earlier handover date and confirm it still shows the historical Pending status.
+9. Submit a Done update with only Work Done; verify Findings and the two pending-only fields may be empty.
+10. Verify an attempted Pending update without either required pending-only field is rejected.
+11. Check a report using an explicit end date and verify its status reflects that date.
+12. Assign an activity to multiple active staff members and verify each can access it while an unassigned staff account cannot.
+13. Submit a support-issue report as staff; verify the reporter and administrator can view it, but another staff account cannot. Resolve it as an administrator with resolution notes.
+14. Send an account invitation and verify the link permits password setup. Request a password reset, use the link once, and verify it cannot be reused.
+15. Set a temporary password as administrator and verify the staff account is restricted to password change until its first-login change is complete.
 
 Use the application log and host-level health checks to investigate failures. Avoid recording credentials, session tokens, or unnecessary personal data in support tickets.
 

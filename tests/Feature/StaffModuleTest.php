@@ -12,6 +12,18 @@ class StaffModuleTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow('2026-11-04 15:30:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function user(string $name, string $role = 'staff'): User
     {
         return User::create(['name' => $name, 'email' => str_replace(' ', '.', strtolower($name)).uniqid().'@example.com', 'password' => 'old-password-1234', 'role' => $role, 'is_active' => true]);

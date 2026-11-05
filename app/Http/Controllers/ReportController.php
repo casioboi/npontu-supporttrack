@@ -7,6 +7,7 @@ use App\Models\ActivityUpdate;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ReportController extends Controller
 {
@@ -19,6 +20,7 @@ class ReportController extends Controller
             'activity' => ['nullable', 'integer', 'exists:activities,id'],
             'activity_name' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'in:Done,Pending,Awaiting Update'],
+            'priority' => ['nullable', Rule::in(Activity::PRIORITIES)],
         ]);
         $asOf = isset($filters['end_date'])
             ? Carbon::parse($filters['end_date'], config('app.timezone'))->endOfDay()
@@ -40,6 +42,7 @@ class ReportController extends Controller
             ])
             ->with([
                 'assignee',
+                'assignees',
                 'creator',
                 'updates' => function ($updates) use ($asOf, $request) {
                     $updates->where('created_at', '<=', $asOf);
@@ -54,11 +57,13 @@ class ReportController extends Controller
         if (! empty($filters['end_date'])) $query->whereDate('activity_date', '<=', $filters['end_date']);
         if (! empty($filters['activity'])) $query->whereKey($filters['activity']);
         if (! empty($filters['activity_name'])) $query->where('title', 'like', '%'.$filters['activity_name'].'%');
+        if (! empty($filters['priority'])) $query->where('priority', $filters['priority']);
         if (! empty($filters['personnel'])) {
             $id = (int) $filters['personnel'];
             $query->where(fn ($activities) => $activities
                 ->where('created_by', $id)
                 ->orWhere('assigned_to', $id)
+                ->orWhereHas('assignees', fn ($assignees) => $assignees->whereKey($id))
                 ->orWhereHas('updates', fn ($updates) => $updates
                     ->where('user_id', $id)
                     ->where('created_at', '<=', $asOf)));
@@ -111,18 +116,19 @@ class ReportController extends Controller
 
         return response()->streamDownload(function () use ($activities) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Activity date', 'Activity', 'Status as of report date', 'Created by', 'Assigned to', 'Update time', 'Updated by', 'Update status', 'Work done', 'Findings', 'Outstanding issues', 'Recommended next steps']);
+            fputcsv($out, ['Activity date', 'Activity', 'Priority', 'Status as of report date', 'Created by', 'Assigned to', 'Update time', 'Updated by', 'Update status', 'Work done', 'Findings', 'Outstanding issues', 'Recommended next steps']);
             foreach ($activities as $activity) {
                 if ($activity->updates->isEmpty()) {
-                    fputcsv($out, [$activity->activity_date->toDateString(), $activity->title, $activity->report_status, $activity->creator?->name, $activity->assignee?->name, '', '', '', '', '', '', '']);
+                    fputcsv($out, [$activity->activity_date->toDateString(), $activity->title, $activity->priority, $activity->report_status, $activity->creator?->name, $activity->assignees->pluck('name')->implode(', ') ?: $activity->assignee?->name, '', '', '', '', '', '', '']);
                 }
                 foreach ($activity->updates as $update) {
                     fputcsv($out, [
                         $activity->activity_date->toDateString(),
                         $activity->title,
+                        $activity->priority,
                         $activity->report_status,
                         $activity->creator?->name,
-                        $activity->assignee?->name,
+                        $activity->assignees->pluck('name')->implode(', ') ?: $activity->assignee?->name,
                         $update->created_at->toDateTimeString(),
                         $update->personnel_name,
                         $update->status,

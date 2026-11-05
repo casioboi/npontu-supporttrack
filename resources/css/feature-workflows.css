@@ -1,0 +1,14 @@
+.create-assignee-select{height:auto;min-height:84px;padding:8px 12px}
+.field select[multiple]{height:auto;min-height:116px;padding:8px 12px}
+.field select[multiple] option{padding:5px 7px}
+.login-body .access-card{width:min(540px,100%);margin:24px auto;padding:34px;background:#fff;border:1px solid #e8ebf0;border-radius:20px;box-shadow:0 24px 70px rgba(25,38,61,.12)}
+.access-card .login-heading{margin-bottom:24px}
+.access-card .login-heading h1{margin:7px 0;color:#1d2b40;font-size:30px}
+.access-card .login-heading p{color:#637087;line-height:1.6}
+.access-card .login-form{display:grid;gap:16px}
+.access-card .login-field label{display:block;margin-bottom:7px;font-weight:700}
+.access-card .login-field .input{width:100%;min-height:44px}
+.access-card .login-submit{width:100%;min-height:46px}
+.access-card .login-trust{margin-bottom:16px}
+.access-card>a,.access-card p>a{color:#375dbe}
+@media(max-width:600px){.login-body .access-card{padding:24px 18px;border-radius:15px}.access-card .login-heading h1{font-size:25px}}

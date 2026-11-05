@@ -1,8 +1,9 @@
 *.log
 .DS_Store
 .env
+.env.*
+!.env.example
 .env.backup
-.env.production
 .phpactor.json
 .phpunit.result.cache
 /.fleet
@@ -13,11 +14,15 @@
 /.zed
 /auth.json
 /node_modules
+/.vercel
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
+/secrets
+*.pem
+*.crt
 /vendor
 Homestead.json
 Homestead.yaml

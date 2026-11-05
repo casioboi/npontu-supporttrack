@@ -1,0 +1,7 @@
+.priority-badge{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:4px 8px;border:1px solid transparent;border-radius:999px;font-size:10px;font-weight:700;line-height:1.2;white-space:nowrap}
+.priority-high{color:#9e3028;background:#fff0ee;border-color:#f5d0cb}
+.priority-medium{color:#875916;background:#fff6e5;border-color:#f1dfb8}
+.priority-low{color:#315d83;background:#edf6ff;border-color:#d0e4f5}
+.create-field select.create-input{appearance:auto}
+.handover-activity>.priority-badge{margin:4px 8px 4px 0}
+@media(max-width:560px){.priority-badge{font-size:9px;padding:4px 7px}}

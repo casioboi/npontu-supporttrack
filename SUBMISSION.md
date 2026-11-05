@@ -12,7 +12,8 @@ SupportTrack gives Applications Support teams a shared daily activity log with a
 ## Key features
 
 - Authenticated staff and administrator roles with protected personnel management.
-- Dated and optionally assigned support activities that begin Pending.
+- Dated support activities that begin Pending, with administrator editing for activity details, scheduling, and optional assignment.
+- High, Medium, and Low activity priorities with prioritized handover ordering and filtered reports.
 - Immutable chronological updates with structured work, findings, outstanding issues, recommended next steps, and server-recorded personnel identity and timestamps.
 - Historical Daily Handover with automatic pending carryover, as-of-date status, and complete activity history.
 - Filterable historical activity reports with CSV export and personnel update breakdown.

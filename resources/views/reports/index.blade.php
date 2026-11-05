@@ -15,6 +15,7 @@
     <div class="field"><label for="activity_name">Activity name</label><input class="input" type="search" id="activity_name" name="activity_name" value="{{ $filters['activity_name'] ?? '' }}" placeholder="Search activity title"></div>
     <div class="field"><label for="activity">Exact activity</label><select id="activity" name="activity"><option value="">All activities</option>@foreach($activityOptions as $option)<option value="{{ $option->id }}" @selected(($filters['activity'] ?? '') == $option->id)>{{ Str::limit($option->title, 45) }}</option>@endforeach</select></div>
     <div class="field"><label for="status">Status as of report date</label><select id="status" name="status"><option value="">Any status</option>@foreach(['Done', 'Pending', 'Awaiting Update'] as $status)<option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ $status }}</option>@endforeach</select></div>
+    <div class="field"><label for="priority">Priority</label><select id="priority" name="priority"><option value="">All priorities</option>@foreach(\App\Models\Activity::PRIORITIES as $priority)<option value="{{ $priority }}" @selected(($filters['priority'] ?? '') === $priority)>{{ $priority }}</option>@endforeach</select></div>
     <button class="button primary">Run report</button><a class="button" href="{{ route('reports') }}">Reset</a>
 </form>
 
@@ -40,14 +41,15 @@
 
 <section class="card table-wrap">
     <table>
-        <thead><tr><th>Activity</th><th>Date</th><th>Status at report date</th><th>Personnel</th><th>Updates</th><th>History</th></tr></thead>
+        <thead><tr><th>Activity</th><th>Date</th><th>Priority</th><th>Status at report date</th><th>Personnel</th><th>Updates</th><th>History</th></tr></thead>
         <tbody>
             @forelse($activities as $activity)
                 <tr>
                     <td><a class="activity-title" style="text-decoration:none" href="{{ route('activities.show', $activity) }}">{{ $activity->title }}</a><div class="activity-meta">{{ Str::limit($activity->description, 75) }}</div></td>
                     <td>{{ $activity->activity_date->format('M j, Y') }}</td>
+                    <td><span class="priority-badge priority-{{ strtolower($activity->priority) }}">{{ $activity->priority }}</span></td>
                     <td><span class="badge {{ $activity->report_status === 'Awaiting Update' ? 'admin' : strtolower($activity->report_status) }}">{{ $activity->report_status }}</span></td>
-                    <td>{{ $activity->assignee?->name ?? 'Unassigned' }}</td>
+                    <td>{{ $activity->assignees->pluck('name')->implode(', ') ?: $activity->assignee?->name ?: 'Unassigned' }}</td>
                     <td>{{ $activity->updates->count() }}</td>
                     <td>
                         <details>
@@ -70,7 +72,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6"><div class="empty"><strong>No matching records</strong>Adjust the filters and run the report again.</div></td></tr>
+                <tr><td colspan="7"><div class="empty"><strong>No matching records</strong>Adjust the filters and run the report again.</div></td></tr>
             @endforelse
         </tbody>
     </table>

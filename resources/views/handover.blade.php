@@ -9,6 +9,7 @@
     $doneItems = $activities->where('handover_status', 'Done');
     $handoverFilters = array_filter([
         'status' => $filters['status'] ?? null,
+        'priority' => $filters['priority'] ?? null,
         'personnel' => $staffView ? null : ($filters['personnel'] ?? null),
     ], fn ($value) => filled($value));
 @endphp
@@ -40,6 +41,15 @@
                 <option value="">All statuses</option>
                 @foreach(['Pending', 'Done', 'Awaiting Update'] as $status)
                     <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ $status }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="field">
+            <label for="priority_filter">Priority</label>
+            <select class="input" id="priority_filter" name="priority">
+                <option value="">All priorities</option>
+                @foreach(\App\Models\Activity::PRIORITIES as $priority)
+                    <option value="{{ $priority }}" @selected(($filters['priority'] ?? '') === $priority)>{{ $priority }}</option>
                 @endforeach
             </select>
         </div>
@@ -88,9 +98,10 @@
                     <div class="handover-record-labels">
                         <span class="handover-origin">{{ $activity->is_carried_forward ? 'Carried forward' : 'New activity' }}</span>
                         <span class="handover-reference">Activity #{{ $activity->id }}</span>
+                        <span class="priority-badge priority-{{ strtolower($activity->priority) }}">{{ $activity->priority }} priority</span>
                     </div>
                     <h3><a href="{{ route('activities.show', $activity) }}">{{ $activity->title }}</a></h3>
-                    <p class="handover-assignee">{{ $activity->assignee?->name ? 'Assigned to '.$activity->assignee->name : 'Unassigned team activity' }}</p>
+                    <p class="handover-assignee">{{ $activity->assignees->pluck('name')->implode(', ') ?: ($activity->assignee?->name ? 'Assigned to '.$activity->assignee->name : 'Unassigned team activity') }}</p>
                 </div>
                 <span class="badge {{ $status === 'Awaiting Update' ? 'awaiting-update' : strtolower($status) }}">{{ $status }}</span>
             </div>

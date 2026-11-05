@@ -23,12 +23,13 @@ class HandoverTest extends TestCase
         ]);
     }
 
-    private function activity(User $creator, ?int $assignee, string $title, string $date, string $status = 'Pending'): Activity
+    private function activity(User $creator, ?int $assignee, string $title, string $date, string $status = 'Pending', string $priority = 'Medium'): Activity
     {
         return Activity::create([
             'title' => $title,
             'activity_date' => $date,
             'status' => $status,
+            'priority' => $priority,
             'created_by' => $creator->id,
             'assigned_to' => $assignee,
         ]);
@@ -114,6 +115,31 @@ class HandoverTest extends TestCase
         $this->actingAs($admin)->get('/handover?date=2026-11-04&status=Done')
             ->assertOk()
             ->assertSee('No activities for this date');
+        Carbon::setTestNow();
+    }
+
+    public function test_handover_filters_priorities_and_sorts_high_first_within_status(): void
+    {
+        Carbon::setTestNow('2026-11-04 12:00:00');
+        $admin = $this->user('Admin User', 'admin');
+        $staff = $this->user('Assigned Staff');
+        $low = $this->activity($admin, $staff->id, 'A low-priority task', '2026-11-04', 'Pending', 'Low');
+        $medium = $this->activity($admin, $staff->id, 'B medium-priority task', '2026-11-04', 'Pending', 'Medium');
+        $high = $this->activity($admin, $staff->id, 'C high-priority task', '2026-11-04', 'Pending', 'High');
+        foreach ([$low, $medium, $high] as $activity) {
+            $this->update($activity, $staff, 'Pending', 'Reviewed the initial records.', [
+                'outstanding_issues' => 'One confirmation is outstanding.',
+                'next_steps' => 'Request confirmation.',
+            ]);
+        }
+
+        $this->actingAs($admin)->get('/handover?date=2026-11-04')
+            ->assertOk()
+            ->assertViewHas('activities', fn ($activities) => $activities->pluck('id')->all() === [$high->id, $medium->id, $low->id]);
+        $this->actingAs($admin)->get('/handover?date=2026-11-04&priority=High')
+            ->assertOk()->assertSee('C high-priority task')->assertDontSee('B medium-priority task');
+        $this->actingAs($admin)->get('/handover?date=2026-11-04&priority=Urgent')
+            ->assertRedirect()->assertSessionHasErrors('priority');
         Carbon::setTestNow();
     }
 

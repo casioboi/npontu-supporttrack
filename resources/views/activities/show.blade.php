@@ -8,7 +8,12 @@
         <h1>{{ $activity->title }}</h1>
         <div class="subtle">{{ $activity->activity_date->format('l, F j, Y') }} <span class="meta-divider">·</span> Created by {{ $activity->creator?->name ?? 'Former personnel' }} <span class="meta-divider">·</span> {{ $activity->created_at->format('M j, Y · g:i A') }}</div>
     </div>
-    <span class="badge {{ strtolower($activity->status) }} detail-status">{{ $activity->status }}</span>
+    <div class="detail-heading-actions">
+        @if(auth()->user()->isAdmin())
+            <a class="button" href="{{ route('activities.edit', $activity) }}">Edit activity</a>
+        @endif
+        <span class="badge {{ strtolower($activity->status) }} detail-status">{{ $activity->status }}</span>
+    </div>
 </div>
 
 <div class="activity-detail-grid">
@@ -24,8 +29,9 @@
             <p class="detail-description detail-description-empty">No additional description was provided for this activity.</p>
         @endif
         <div class="detail-meta-grid">
-            <div class="detail-meta-item"><span><i>ASSIGNED TO</i><b>{{ $activity->assignee?->name ?? 'Unassigned' }}</b></span></div>
+            <div class="detail-meta-item"><span><i>ASSIGNED TO</i><b>{{ $activity->assignees->pluck('name')->implode(', ') ?: $activity->assignee?->name ?: 'Unassigned' }}</b></span></div>
             <div class="detail-meta-item"><span><i>ACTIVITY DATE</i><b>{{ $activity->activity_date->format('M j, Y') }}</b></span></div>
+            <div class="detail-meta-item"><span><i>PRIORITY</i><b><span class="priority-badge priority-{{ strtolower($activity->priority) }}">{{ $activity->priority }}</span></b></span></div>
             <div class="detail-meta-item"><span><i>CREATED BY</i><b>{{ $activity->creator?->name ?? 'Former personnel' }}</b></span></div>
             <div class="detail-meta-item"><span><i>CURRENT STATUS</i><b><span class="badge {{ strtolower($activity->status) }}">{{ $activity->status }}</span></b></span></div>
         </div>
@@ -54,7 +60,7 @@
         <section class="card section detail-update-card">
             <div class="detail-section-heading"><div><div class="panel-overline">RECORD PROGRESS</div><h2 class="section-title">Add an update</h2></div><span class="required-note">* Required</span></div>
             <p class="update-intro">Work Done is always required. Pending updates also require Outstanding Issues and Recommended Next Steps. Findings are optional.</p>
-            <form id="add-update" method="post" action="{{ route('activities.update', $activity) }}" data-busy>
+            <form id="add-update" method="post" action="{{ route('activities.updates.store', $activity) }}" data-busy>
                 @csrf
                 <input type="hidden" name="last_seen_update_id" value="{{ $activity->latestUpdate?->id ?? 0 }}">
                 <div class="field"><label for="activity_name">Activity name</label><input class="input" id="activity_name" value="{{ $activity->title }}" readonly aria-readonly="true"></div>

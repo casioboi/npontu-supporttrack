@@ -1,0 +1,9 @@
+:{$PORT:80} {
+    bind 0.0.0.0
+    root * /app/public
+    encode zstd gzip
+
+    php_server {
+        try_files {path} index.php
+    }
+}

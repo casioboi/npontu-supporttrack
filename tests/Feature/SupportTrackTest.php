@@ -13,6 +13,18 @@ class SupportTrackTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow('2026-11-04 15:30:00');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     private function user(string $role = 'staff'): User
     {
         return User::create(['name' => 'Shadrack Anim Amoafo', 'email' => uniqid().'@example.com', 'password' => 'correct-horse-battery', 'role' => $role, 'is_active' => true]);
@@ -38,6 +50,103 @@ class SupportTrackTest extends TestCase
         $this->actingAs($this->user('admin'))->get('/activities/create')->assertOk()->assertSee('Create an activity')->assertSee('Assigned personnel')->assertSee('Starts as Pending')->assertSee('Ready for handover')->assertSee('10,000');
     }
 
+    public function test_administrator_can_edit_activity_details_without_changing_status_or_update_history(): void
+    {
+        $admin = $this->user('admin');
+        $staff = $this->user();
+        $newAssignee = $this->user();
+        $activity = Activity::create([
+            'title' => 'Review payment batch',
+            'description' => 'Original context',
+            'activity_date' => '2026-11-03',
+            'status' => 'Pending',
+            'created_by' => $admin->id,
+            'assigned_to' => $staff->id,
+        ]);
+        $activity->updates()->create([
+            'user_id' => $staff->id,
+            'personnel_name' => $staff->name,
+            'personnel_email' => $staff->email,
+            'personnel_role' => $staff->role,
+            'status' => 'Pending',
+            'remark' => 'Checked the settlement file.',
+            'work_done' => 'Checked the settlement file.',
+            'outstanding_issues' => 'One record needs review.',
+            'next_steps' => 'Compare the processor export.',
+        ]);
+
+        $this->actingAs($admin)
+            ->get("/activities/{$activity->id}/edit")
+            ->assertOk()
+            ->assertSee('Edit activity')
+            ->assertSee('Existing update timestamps are unchanged')
+            ->assertSee($activity->title);
+
+        $this->actingAs($admin)->put("/activities/{$activity->id}", [
+            'title' => 'Reconcile settlement records',
+            'description' => 'Use the corrected processor export.',
+            'activity_date' => '2026-11-05',
+            'priority' => 'High',
+            'assigned_to' => $newAssignee->id,
+            'status' => 'Done',
+            'created_by' => $newAssignee->id,
+        ])->assertRedirect(route('activities.show', $activity));
+
+        $activity->refresh();
+        $this->assertSame('Reconcile settlement records', $activity->title);
+        $this->assertSame('Use the corrected processor export.', $activity->description);
+        $this->assertSame('2026-11-05', $activity->activity_date->toDateString());
+        $this->assertSame('High', $activity->priority);
+        $this->assertSame($newAssignee->id, $activity->assigned_to);
+        $this->assertSame($admin->id, $activity->created_by);
+        $this->assertSame('Pending', $activity->status);
+        $this->assertDatabaseCount('activity_updates', 1);
+        $this->assertSame('Checked the settlement file.', $activity->updates()->first()->work_done);
+    }
+
+    public function test_activity_editing_is_administrator_only_and_rejects_inactive_new_assignees(): void
+    {
+        $admin = $this->user('admin');
+        $staff = $this->user();
+        $inactive = $this->user();
+        $inactive->update(['is_active' => false]);
+        $activity = Activity::create([
+            'title' => 'Review payment batch',
+            'activity_date' => '2026-11-04',
+            'status' => 'Pending',
+            'created_by' => $admin->id,
+            'assigned_to' => $staff->id,
+        ]);
+
+        $this->actingAs($staff)
+            ->get("/activities/{$activity->id}/edit")
+            ->assertForbidden();
+        $this->actingAs($staff)
+            ->put("/activities/{$activity->id}", [
+                'title' => 'Unauthorised change',
+                'activity_date' => '2026-11-04',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->put("/activities/{$activity->id}", [
+                'title' => 'Review payment batch',
+                'activity_date' => '2026-11-04',
+                'assigned_to' => $inactive->id,
+            ])
+            ->assertSessionHasErrors('assigned_to.0');
+        $this->assertSame($staff->id, $activity->fresh()->assigned_to);
+
+        $this->actingAs($admin)
+            ->put("/activities/{$activity->id}", [
+                'title' => 'Review payment batch',
+                'activity_date' => '2026-11-04',
+                'assigned_to' => $admin->id,
+            ])
+            ->assertSessionHasErrors('assigned_to.0');
+        $this->assertSame($staff->id, $activity->fresh()->assigned_to);
+    }
+
     public function test_activity_defaults_to_pending_and_updates_keep_authenticated_identity_and_history(): void
     {
         $user = $this->user();
@@ -45,6 +154,7 @@ class SupportTrackTest extends TestCase
         $this->actingAs($admin)->post('/activities', ['title' => 'Compare SMS totals', 'activity_date' => '2026-11-04', 'assigned_to' => $user->id])->assertRedirect();
         $activity = Activity::firstOrFail();
         $this->assertSame('Pending', $activity->status);
+        $this->assertSame('Medium', $activity->priority);
         $this->actingAs($user)->post("/activities/{$activity->id}/updates", ['status' => 'Done', 'work_done' => 'Compared against gateway logs.', 'findings' => 'Log reference SMS-104'])->assertRedirect();
         $this->actingAs($user)->post("/activities/{$activity->id}/updates", ['status' => 'Pending', 'work_done' => 'Investigating a 12 message discrepancy.', 'outstanding_issues' => 'A 12 message discrepancy remains.', 'next_steps' => 'Compare the latest gateway report.', 'last_seen_update_id' => 1])->assertRedirect();
         $activity->refresh();
@@ -193,6 +303,52 @@ class SupportTrackTest extends TestCase
         $this->actingAs($user)->get('/reports/export?start_date=2026-11-04&end_date=2026-11-04&status=Done')->assertOk()->assertHeader('content-type', 'text/csv; charset=UTF-8');
     }
 
+    public function test_priorities_default_validate_filter_and_export_with_reports(): void
+    {
+        $admin = $this->user('admin');
+        $staff = $this->user();
+        $this->actingAs($admin)->post('/activities', [
+            'title' => 'Urgent payment reconciliation',
+            'activity_date' => '2026-11-04',
+            'priority' => 'High',
+            'assigned_to' => $staff->id,
+        ])->assertRedirect();
+        $this->actingAs($admin)->post('/activities', [
+            'title' => 'Routine account review',
+            'activity_date' => '2026-11-04',
+        ])->assertRedirect();
+        $this->actingAs($admin)->post('/activities', [
+            'title' => 'Invalid priority activity',
+            'activity_date' => '2026-11-04',
+            'priority' => 'Urgent',
+        ])->assertSessionHasErrors('priority');
+
+        $urgent = Activity::where('title', 'Urgent payment reconciliation')->firstOrFail();
+        $routine = Activity::where('title', 'Routine account review')->firstOrFail();
+        $this->assertSame('High', $urgent->priority);
+        $this->assertSame('Medium', $routine->priority);
+
+        $this->actingAs($admin)->get('/activities?priority=High')
+            ->assertOk()->assertSee('Urgent payment reconciliation')->assertDontSee('Routine account review');
+        $this->actingAs($admin)->get('/handover?date=2026-11-04&priority=High')
+            ->assertOk()->assertSee('Urgent payment reconciliation')->assertDontSee('Routine account review');
+        $this->actingAs($admin)->get('/reports?priority=High')
+            ->assertOk()
+            ->assertSee('Urgent payment reconciliation')
+            ->assertViewHas('activities', fn ($activities) => $activities->pluck('id')->all() === [$urgent->id]);
+        $this->actingAs($admin)->put("/activities/{$urgent->id}", [
+            'title' => $urgent->title,
+            'activity_date' => '2026-11-04',
+            'priority' => 'Urgent',
+        ])->assertSessionHasErrors('priority');
+
+        $export = $this->actingAs($admin)->get('/reports/export?priority=High')->assertOk();
+        $csv = $export->streamedContent();
+        $this->assertStringContainsString('Priority', $csv);
+        $this->assertStringContainsString('High', $csv);
+        $this->assertStringNotContainsString('Routine account review', $csv);
+    }
+
     public function test_staff_cannot_access_personnel_management(): void
     {
         $this->actingAs($this->user())->get('/personnel')->assertForbidden();
@@ -202,7 +358,7 @@ class SupportTrackTest extends TestCase
     {
         $admin = $this->user('admin');
         $this->user();
-        $this->actingAs($admin)->get('/personnel')->assertOk()->assertSee('Add a teammate')->assertSee('Create personnel account')->assertSee('Team directory')->assertSee('Edit details')->assertSee('Reset password')->assertSee('Deactivate account');
+        $this->actingAs($admin)->get('/personnel')->assertOk()->assertSee('Add a teammate')->assertSee('Send invitation')->assertSee('Team directory')->assertSee('Edit details')->assertSee('Reset password')->assertSee('Deactivate account');
     }
 
     public function test_admin_can_edit_personnel_but_cannot_demote_themselves(): void

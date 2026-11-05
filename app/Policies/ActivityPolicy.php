@@ -11,6 +11,7 @@ class ActivityPolicy
     {
         return $user->isAdmin()
             || $activity->assigned_to === $user->id
+            || $activity->assignees()->whereKey($user->id)->exists()
             || $activity->created_by === $user->id
             || $activity->status === 'Pending'
             || $activity->updates()->where('status', 'Pending')->exists();
@@ -20,6 +21,7 @@ class ActivityPolicy
     {
         return ! $user->isAdmin()
             && ($activity->assigned_to === $user->id
+                || $activity->assignees()->whereKey($user->id)->exists()
                 || $activity->created_by === $user->id
                 || $activity->status === 'Pending');
     }

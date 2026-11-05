@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\ActivityUpdate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PersonnelController extends Controller
@@ -13,10 +15,33 @@ class PersonnelController extends Controller
     public function index() { return view('personnel.index', ['users' => User::withCount(['createdActivities','activityUpdates'])->orderBy('name')->paginate(15), 'summary' => ['total' => User::count(), 'active' => User::where('is_active', true)->count(), 'admins' => User::where('role', 'admin')->where('is_active', true)->count(), 'updates' => ActivityUpdate::count()]]); }
     public function store(Request $request)
     {
-        $data = $request->validate(['name' => ['required','string','max:255'], 'email' => ['required','email','max:255','unique:users,email'], 'password' => ['required','string','min:12','confirmed'], 'role' => ['required',Rule::in(['admin','staff'])]]);
-        $data['password'] = Hash::make($data['password']);
-        User::create($data + ['is_active' => true]);
-        return back()->with('success','Personnel account created.');
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', Rule::in(['admin', 'staff'])],
+        ]);
+        $user = User::create($data + [
+            'password' => Str::random(64),
+            'is_active' => true,
+            'must_change_password' => true,
+        ]);
+        $status = Password::sendResetLink(['email' => $user->email]);
+        if ($status !== Password::RESET_LINK_SENT) {
+            return back()->withErrors(['email' => __($status)]);
+        }
+
+        return back()->with('success', 'Invitation email sent. The account becomes usable after the recipient sets a password.');
+    }
+
+    public function sendInvitation(User $user)
+    {
+        abort_unless($user->is_active && $user->must_change_password && $user->email_verified_at === null, 422, 'Only active accounts with a pending invitation can receive an invitation email.');
+        $status = Password::sendResetLink(['email' => $user->email]);
+        if ($status !== Password::RESET_LINK_SENT) {
+            return back()->withErrors(['email' => __($status)]);
+        }
+
+        return back()->with('success', 'Invitation email sent.');
     }
     public function toggle(User $user)
     {
@@ -28,7 +53,7 @@ class PersonnelController extends Controller
     public function password(Request $request, User $user)
     {
         $data = $request->validate(['password' => ['required','string','min:12','confirmed']]);
-        $user->update(['password' => Hash::make($data['password'])]);
+        $user->update(['password' => Hash::make($data['password']), 'must_change_password' => true]);
         return back()->with('success','Password reset successfully.');
     }
 

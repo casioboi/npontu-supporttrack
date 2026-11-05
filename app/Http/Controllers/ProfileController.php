@@ -18,7 +18,7 @@ class ProfileController extends Controller
             'password' => ['required','string','min:12','confirmed'],
         ]);
 
-        $request->user()->update(['password' => $data['password']]);
+        $request->user()->update(['password' => $data['password'], 'must_change_password' => false]);
         return back()->with('success', 'Your password has been changed.');
     }
 }

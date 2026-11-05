@@ -13,6 +13,9 @@ class AuthController extends Controller
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
         if (Auth::attempt($credentials + ['is_active' => true], $request->boolean('remember'))) {
             $request->session()->regenerate();
+            if ($request->user()->must_change_password) {
+                return redirect()->route('profile');
+            }
             return redirect()->intended(route('dashboard'));
         }
         return back()->withErrors(['email' => 'These credentials do not match an active account.'])->onlyInput('email');

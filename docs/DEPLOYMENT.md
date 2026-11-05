@@ -94,47 +94,42 @@ The test environment is configured in `phpunit.xml` to use in-memory SQLite, an 
 
 The feature suites cover:
 
-- `SupportTrackTest`: login, dashboard, activity creation and status updates, conditional field validation, server-controlled identity/time, activity history, handover/report filters, and personnel-management restrictions.
+- `SupportTrackTest`: login, dashboard, activity creation and status updates, conditional field validation, server-controlled identity/time, activity history, priority defaults/validation/filters and CSV fields, handover/report filters, and personnel-management restrictions.
+- Activity-management coverage in `SupportTrackTest`: administrator-only editing of title, description, date, priority, and assignment; preservation of status and update history; and rejection of inactive assignments.
 - `StaffModuleTest`: authenticated workspace access, staff dashboard/activity scoping, pending work continuation, history and report privacy, profile password changes, stale-form conflicts, and CSV export.
-- `HandoverTest`: date-specific status, pending carryover, personnel/status filters, awaiting activities, activity creation boundaries, and configured timezone boundaries.
+- `HandoverTest`: date-specific status, pending carryover, priority filters and ordering, personnel/status filters, awaiting activities, activity creation boundaries, and configured timezone boundaries.
+- `ProductionFeatureTest`: multi-person assignments, inactive/non-staff assignment rejection, issue-report privacy and administrator resolution, invitation delivery, single-use password reset, and forced first-login password changes.
 - `ExampleTest`: a basic unit-test smoke check.
 
-The current suite does not cover every browser interaction or deployment environment. In particular, no MySQL production migration rehearsal, cross-browser accessibility review, or deployment-host verification is implied by passing the SQLite suite. Features such as issue reporting and priority management do not exist and therefore have no corresponding tests.
+The current suite does not cover every browser interaction or deployment environment. In particular, no MySQL production migration rehearsal, cross-browser accessibility review, or deployment-host verification is implied by passing the SQLite suite. The example environment uses `MAIL_MAILER=log`; this writes messages to application logs rather than delivering email.
 
-## Production deployment guidance
+## Production deployment
 
-The repository is not currently deployed. For a future deployment:
+Production deployment instructions are maintained in one place: the [Ubuntu VPS, Docker, Nginx, HTTPS, and Aiven MySQL guide](PRODUCTION-HOSTING-AIVEN-VPS.md). Follow that guide rather than adapting the local XAMPP steps for production. It covers external secrets, Aiven TLS, manual migration safety, Nginx/Let's Encrypt, backups, releases, and recovery.
 
-1. Provision a maintained PHP 8.2+ runtime, Composer, required PHP extensions, and a supported MySQL/MariaDB database.
-2. Deploy the application with the web server document root set to the Laravel `public` directory; do not expose the repository root.
-3. Install production PHP dependencies:
+Never put credentials, private keys, live user data, or session tokens in documentation or Git. The repository is not currently deployed.
 
-   ```sh
-   composer install --no-dev --optimize-autoloader
-   ```
+### Aiven MySQL with Vercel Container Runtime
 
-4. Configure environment variables outside source control. Set `APP_ENV=production`, `APP_DEBUG=false`, a valid generated `APP_KEY`, the public `APP_URL`, operational timezone, and least-privilege database credentials. Use HTTPS and configure secure session cookies for the host.
-5. Ensure `storage/` and `bootstrap/cache/` are writable by the application process. Keep `.env`, logs, backups, and generated secrets inaccessible from the web.
-6. Take and verify a restorable database backup before schema changes. Apply migrations carefully:
+The Docker image contains `storage/app/certificates/aiven-ca.pem`, the public Aiven CA certificate. It is not a database credential. Laravel's MySQL configuration enables PDO server-certificate verification whenever `MYSQL_ATTR_SSL_CA` is set; do not disable verification.
 
-   ```sh
-   php artisan migrate --force
-   ```
+Keep the existing local `.env` pointed at the local development database. Configure the following values in the Vercel project's production Environment Variables instead; enter the Aiven hostname, port, username, and password from the Aiven service's connection details, never in Git:
 
-   Do not run destructive migrations against production data without an approved backup and recovery plan.
-7. Create the first administrator through `php artisan supporttrack:admin` in a secured deployment session. If a seeder bootstrap password is used, remove it from the deployment environment immediately afterward.
-8. Build frontend assets only if required by the release:
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+DB_CONNECTION=mysql
+DB_HOST=<Aiven service hostname>
+DB_PORT=<Aiven service port>
+DB_DATABASE=npontu_supporttrack
+DB_USERNAME=<dedicated application database user>
+DB_PASSWORD=<Aiven database password>
+MYSQL_ATTR_SSL_CA=/app/storage/app/certificates/aiven-ca.pem
+```
 
-   ```sh
-   npm install
-   npm run build
-   ```
+Set these values in Vercel's project settings for the intended deployment environment, then redeploy. Do not copy the local `.env` to Vercel. The CA path above is the absolute path inside the container.
 
-   The current interface serves CSS from `public/css`.
-9. Clear stale cached configuration when environment values change, then run `php artisan optimize` as appropriate for the deployment.
-10. Configure database and file backups, log monitoring, TLS renewal, and a recovery procedure. Check Laravel's `/up` health endpoint and perform a smoke test with designated accounts.
-
-Never put credentials, private keys, live user data, or session tokens in documentation or Git.
+**Network compatibility is a separate prerequisite:** Vercel's current [Static IP documentation](https://vercel.com/docs/networking/static-ips) states that Static IPs do not support Container Images. Therefore, this container cannot rely on Vercel Static IP egress to satisfy a restrictive Aiven IP allowlist. Do not broaden the populated production database's allowlist to all addresses as a workaround. Resolve a supported private/allowlisted network path or use a hosting runtime with stable egress before enabling production database access. TLS certificate verification protects the connection but does not replace network access restrictions.
 
 ## Operational references
 

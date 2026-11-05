@@ -21,15 +21,14 @@ Use the dashboard to review activity totals, today's activity, Done and Pending 
 ### 3. Creating a staff account
 
 1. Open **Personnel**.
-2. Complete the new account form with the staff member's name, work email, password and confirmation, and role.
-3. Use a password of at least 12 characters and share initial credentials through an approved secure channel.
-4. Submit the form.
+2. Complete the new account form with the staff member's name, work email, and role.
+3. Select **Send invitation**.
 
-**Expected result:** The account is created and active. The application does not send an invitation email or force a password change at first sign-in. Ask the staff member to change the password from **My Profile** after signing in.
+**Expected result:** The account is created and an email with a single-use password-setup link is sent. The staff member chooses their own password before signing in. The deployment must have a working mail transport and public `APP_URL`.
 
 ### 4. Activating, deactivating, and managing accounts
 
-In **Personnel**, use the account controls to change activation state, edit name/email/role, or set a replacement password. A replacement password must be at least 12 characters and confirmed. An administrator cannot deactivate their own account, demote their own administrator role, or deactivate/demote the last active administrator.
+In **Personnel**, use the account controls to change activation state, edit name/email/role, resend an invitation, or set a temporary password. A temporary password must be at least 12 characters and confirmed. The user must change it at the next sign-in. An administrator cannot deactivate their own account, demote their own administrator role, or deactivate/demote the last active administrator.
 
 **Expected result:** An inactive account is blocked from the workspace; an already authenticated inactive account is logged out on a subsequent web request. Existing activity history remains.
 
@@ -37,17 +36,18 @@ In **Personnel**, use the account controls to change activation state, edit name
 
 1. Open **Activities**, then select **New activity**.
 2. Enter a clear title and activity date.
-3. Add a description if the assignee needs context.
-4. Optionally select one active staff member as the assignee, or leave it unassigned.
-5. Select **Create activity**.
+3. Choose **High**, **Medium**, or **Low** priority. Medium is the default.
+4. Add a description if the assignee needs context.
+5. Optionally select one or more active staff members as assignees, or leave it unassigned.
+6. Select **Create activity**.
 
-**Expected result:** A new activity is created with Pending status and appears in activity lists and handover views according to its date. The creator is recorded as the administrator. The application has no priority field, team assignment, activity edit, or delete workflow.
+**Expected result:** A new activity is created with Pending status and the selected priority and appears in activity lists and handover views according to its date. The creator is recorded as the administrator. Every selected assignee can access the activity. Activity deletion is not available.
 
 ### 6. Managing scheduled activities
 
-Use **Activities** to search and filter the activity list by title/description, activity date, status, and (for administrators) assignee. Open a row to view its current details and history.
+Use **Activities** to search and filter the activity list by title/description, activity date, status, priority, and assignee. Open a row and select **Edit activity** to change its title, description, activity date, priority, or assignees. Save the changes to return to the activity record. New assignees must be active staff; an existing inactive or administrator assignment may remain or be replaced.
 
-**Expected result:** You can inspect and create activities. Existing activity date, title, description, or assignment cannot currently be edited through the application; there is no activity edit/delete route. Create the activity with the intended date and assignee.
+**Expected result:** The activity details are updated without changing its current Pending/Done status or altering submitted update history. Changing the activity date affects date-based handover/report selection, while existing update timestamps remain unchanged. Activity deletion is not available.
 
 ### 7. Reviewing staff updates and activity history
 
@@ -57,21 +57,21 @@ Open an activity to review its update timeline and latest structured details. **
 
 ### 8. Monitoring pending work and daily handover
 
-Open **Daily Handover** and select a date. Optionally filter by status or personnel. Review the latest status and update at the end of that date, the last staff member who updated the item, and any pending work carried from an earlier date.
+Open **Daily Handover** and select a date. Optionally filter by status, priority, or personnel. Within each status group, High-priority items appear before Medium and Low items, then titles are sorted. Review the latest status and update at the end of that date, the last staff member who updated the item, and any pending work carried from an earlier date.
 
 **Expected result:** Pending work and activities awaiting their first update remain visible on later handovers. Done work stops carrying forward unless a later authorised Pending update reopens it. Handover is calculated from history; it does not create duplicate activities.
 
 ### 9. Reviewing support-issue reports
 
-The current application has no separate unplanned support-issue reporting feature or issue-report list. Do not expect reports of incidents outside official activities to appear in SupportTrack. Follow the organisation's approved incident channel; an administrator may create an official activity if follow-up work should be tracked here.
+Open **Support Issues** and choose **Report an issue**. Enter a concise title and description, choose a priority, and optionally identify the affected service. Submit the report.
 
-**Expected result:** Only activities and their updates are visible in the current system.
+**Expected result:** The report is visible only to you and administrators. Administrators can move it between Open, In Progress, and Resolved. Resolution requires resolution notes. Issue reports are separate from scheduled activities and do not create an activity automatically.
 
 ### 10. Running, filtering, and exporting reports
 
 1. Open **Reports**.
 2. Set optional **From activity date** and **To activity date / status as of** dates. The end date is inclusive and defines the historical cutoff.
-3. Optionally choose personnel (administrator only), an exact activity, title text, or status.
+3. Optionally choose priority, personnel (administrator only), an exact activity, title text, or status.
 4. Select **Run report**.
 5. Select **Export CSV** to download the matching results.
 
@@ -87,15 +87,15 @@ Select **Log out** from the application navigation.
 
 ### 1. Receiving credentials and signing in
 
-An administrator creates your account and provides the application address, email, and initial password. Open the Login page, enter your credentials, and select **Sign in**.
+An administrator sends an invitation to your work email. Open the single-use password-setup link, choose a password of at least 12 characters, then sign in using the application address and your email.
 
-**Expected result:** You enter the staff workspace if the account is active. There is no self-registration or email invitation flow.
+**Expected result:** Your password is set and your email is marked verified. Public self-registration is not available.
 
 ### 2. Changing an initial password
 
-The application does not force a password change at first login. To change it, open **My Profile**, enter your current password, enter a new password of at least 12 characters, confirm it, and save.
+If an administrator gave you a temporary password, sign in and follow the forced password-change prompt. Otherwise, open **My Profile**, enter your current password, enter a new password of at least 12 characters, confirm it, and save.
 
-**Expected result:** The new password is required at the next login. If you have lost access, contact an administrator; self-service password reset is not implemented.
+**Expected result:** A temporary-password account cannot use the rest of the workspace until the password has been changed. If you have lost access, select **Forgot your password?** on Login, enter your email, and follow the link if one is sent. The confirmation message does not reveal whether the account exists.
 
 ### 3. Understanding the staff dashboard
 
@@ -150,11 +150,13 @@ Open **Daily Handover**, select the relevant date, and optionally filter by stat
 
 ### 10. Reporting an unplanned support issue
 
-There is no dedicated support-issue report form in this version. Do not treat a separate incident-reporting workflow as available. Follow your organisation's approved issue channel; ask an administrator to create an official activity if follow-up work needs to be tracked in SupportTrack.
+Open **Support Issues**, select **Report an issue**, and provide a title, description of at least 10 characters, priority, and optional affected service. Submit the form to create the report.
+
+**Expected result:** You can view the reports you submitted; administrators can view and manage all reports. Other staff cannot view your report. Administrators must enter resolution notes when marking an issue Resolved.
 
 ### 11. Viewing reports and exporting
 
-Open **Reports** and choose activity date range, title text, exact activity, or status as of the selected end date. Select **Run report** to refresh results, or **Export CSV** to download them.
+Open **Reports** and choose activity date range, priority, title text, exact activity, or status as of the selected end date. Select **Run report** to refresh results, or **Export CSV** to download them. The CSV includes each activity's current priority.
 
 **Expected result:** You see activities available to you and your own update records, not colleagues' private update content.
 
@@ -166,4 +168,4 @@ The profile displays your name, email, role, and account status. These details a
 
 ## Official activities and unplanned issues
 
-An **official activity** is a dated work record created by an administrator and updated by authorised staff. An **unplanned support issue** would be a separate issue/incident record. That second workflow is not implemented; use the approved external issue channel and ask an administrator to create an activity when the resulting work needs to be tracked here.
+An **official activity** is a dated work record created by an administrator and updated by assigned or otherwise authorised staff. An **unplanned support issue** is a separate issue report submitted by a staff member or administrator. Issue reports are private to the reporter and administrators; they do not automatically become activities.
