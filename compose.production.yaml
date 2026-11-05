@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: npontu-supporttrack:production
+    restart: unless-stopped
+    env_file:
+      - /etc/npontu-supporttrack/app.env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: info
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+      SESSION_ENCRYPT: "true"
+      SESSION_SECURE_COOKIE: "true"
+      SESSION_HTTP_ONLY: "true"
+      SESSION_SAME_SITE: lax
+      QUEUE_CONNECTION: sync
+      MYSQL_ATTR_SSL_CA: /run/secrets/aiven-ca.pem
+    volumes:
+      - type: bind
+        source: /etc/npontu-supporttrack/aiven-ca.pem
+        target: /run/secrets/aiven-ca.pem
+        read_only: true
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:8080:80"
+    init: true
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test:
+        - CMD
+        - php
+        - -r
+        - "exit(str_contains(@get_headers('http://127.0.0.1/up')[0] ?? '', ' 200 ') ? 0 : 1);"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
