@@ -33,7 +33,8 @@ FROM base AS runtime
 COPY --from=build --chown=www-data:www-data /app /app
 COPY --chown=www-data:www-data Caddyfile /etc/frankenphp/Caddyfile
 
-RUN chown -R www-data:www-data /config/caddy /data/caddy \
+RUN setcap -r /usr/local/bin/frankenphp \
+    && chown -R www-data:www-data /config/caddy /data/caddy \
     && chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 ENV PORT=80 \
