@@ -102,6 +102,7 @@ Free web services can spin down after inactivity and take time to wake on a late
 
 - **Build fails:** inspect Render build logs; confirm the Dockerfile is at the repository root, `composer.lock` is present, and the selected branch contains the intended files.
 - **Service fails to bind / health check fails:** leave the start command unset, confirm Render's injected `PORT` is available, and confirm `/up` returns 200 in runtime logs. Do not add an Nginx sidecar or port mapping from Compose.
+- **Startup reports `frankenphp: Operation not permitted`:** ensure the image does not use `setcap` on the FrankenPHP executable; Render supplies a port that does not require the privileged-port capability. Rebuild and deploy the updated image.
 - **Laravel reports missing APP_KEY:** set a valid persistent `APP_KEY` in Render and redeploy. Never generate a new key on every startup.
 - **Database connection timeout/refused:** verify Aiven status, hostname/port, Render and Aiven regions, Aiven allowlisting, and whether the chosen Render plan has usable egress/networking for that policy.
 - **TLS/CA errors:** verify the Render Secret File name/path, that `MYSQL_ATTR_SSL_CA` exactly matches it, and that the certificate is the appropriate Aiven CA. Do not disable peer verification.
