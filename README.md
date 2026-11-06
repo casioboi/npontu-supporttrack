@@ -2,9 +2,9 @@
 
 **Applications Support Activity Management System**
 
-Npontu SupportTrack is a Laravel web application for recording operational support activities, tracking staff updates, handing over unfinished work, and reviewing activity history through date-based reports. It was independently developed as a technical project for the Npontu Technologies Platforms Developer assignment. The application is not deployed, and this project does not imply endorsement or adoption by Npontu Technologies.
+Npontu SupportTrack is a Laravel web application for recording operational support activities, tracking staff updates, handing over unfinished work, and reviewing activity history through date-based reports. It was independently developed as a technical project for the Npontu Technologies Platforms Developer assignment. The application is independently hosted; hosting does not imply endorsement or adoption by Npontu Technologies.
 
-> **Project status:** Local development and automated tests are supported. No hosted deployment is currently available.
+> **Project status:** The application is live at [npontu-supporttrack.onrender.com](https://npontu-supporttrack.onrender.com/). Local development and automated tests are also supported.
 
 ## 1. Project title and introduction
 
@@ -101,7 +101,7 @@ The migrations also create Laravel support tables for sessions, cache, password-
 
 ## 11. Installation and setup
 
-See the [Windows/XAMPP setup guide](docs/DEPLOYMENT.md) for local development. For the planned Ubuntu VPS, Docker, Nginx, HTTPS, and Aiven MySQL production architecture, follow the authoritative [VPS and Aiven deployment guide](docs/PRODUCTION-HOSTING-AIVEN-VPS.md). No production deployment is claimed.
+See the [Windows/XAMPP setup guide](docs/DEPLOYMENT.md) for local development. The application is hosted on Render at [https://npontu-supporttrack.onrender.com/](https://npontu-supporttrack.onrender.com/). For the separate Ubuntu VPS, Docker, Nginx, HTTPS, and Aiven MySQL architecture, see the [VPS and Aiven deployment guide](docs/PRODUCTION-HOSTING-AIVEN-VPS.md).
 
 ```powershell
 git clone https://github.com/casioboi/npontu-supporttrack.git
@@ -141,7 +141,7 @@ This command prompts for the administrator's name, email, and a confirmed passwo
 php artisan serve
 ```
 
-Open [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login). The repository has no public demo or deployed URL. Node.js is not needed to run the current Blade/CSS interface; if you intentionally build Vite assets, use `npm install` and `npm run build`.
+Open [http://127.0.0.1:8000/login](http://127.0.0.1:8000/login). The live hosted application is available at [https://npontu-supporttrack.onrender.com/](https://npontu-supporttrack.onrender.com/). Node.js is not needed to run the current Blade/CSS interface; if you intentionally build Vite assets, use `npm install` and `npm run build`.
 
 ## 15. System usage
 
@@ -189,7 +189,7 @@ Potential future work, not current functionality:
 - **LinkedIn:** [Shadrack Anim Amoafo](https://www.linkedin.com/in/shadrack-anim-amoafo-7a8300366)
 - **Project:** Npontu SupportTrack
 - **Purpose:** Applications Support Activity Management System
-- **Assignment context:** Independently developed technical project for the Npontu Technologies Platforms Developer assignment. No official endorsement, deployment, or adoption is claimed.
+- **Assignment context:** Independently developed technical project for the Npontu Technologies Platforms Developer assignment. No official endorsement or adoption by Npontu Technologies is claimed.
 
 Suggested GitHub repository description: “A Laravel-based Applications Support Activity Management System for tracking daily operational activities, staff updates, accountability, reporting and team handovers.”
 
